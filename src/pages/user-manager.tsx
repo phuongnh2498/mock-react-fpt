@@ -1,8 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 
 type UserManagerProps = {};
 
-function UserManager({}: UserManagerProps) {
+const TableHeaderElement = ({ key }: { key: string }) => (
+  <th
+    scope="col"
+    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+  >
+    {key}
+  </th>
+);
+
+const UserManager: FC<UserManagerProps> = ({}: UserManagerProps) => {
   const [data, setData] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage] = useState<number>(5);
@@ -43,23 +52,19 @@ function UserManager({}: UserManagerProps) {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                ID
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Title
-              </th>
+            {User.}
+              <TableHeaderElement key="title" />
               <th
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
                 Body
+              </th>
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Action
               </th>
             </tr>
           </thead>
@@ -131,6 +136,6 @@ function UserManager({}: UserManagerProps) {
       </div>
     </div>
   );
-}
+};
 
 export default UserManager;

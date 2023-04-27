@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosError ,AxiosRequestConfig} from 'axios';
+import axios, { AxiosInstance, AxiosError ,AxiosRequestConfig, InternalAxiosRequestConfig, AxiosHeaders} from 'axios';
 
 declare module 'axios' {
   export interface AxiosRequestConfig {
@@ -6,7 +6,7 @@ declare module 'axios' {
   }
 }
 // Define your base URL
-const API_BASE_URL = 'https://api.example.com';
+const API_BASE_URL = 'http://10.133.222.255:8080/v1/api';
 
 // Define your headers without the token
 const API_HEADERS = {
@@ -20,29 +20,27 @@ export const apiClient: AxiosInstance = axios.create({
 });
 
 // Define a function to get the access token from storage
-function getAccessToken(): string | null {
-  return localStorage.getItem('accessToken');
-}
-
-
-// Define a function to get the refresh token from storage
-function getRefreshToken(): string | null {
-  return localStorage.getItem('refreshToken');
+export const getLocalAuthData=(): AuthData | null =>{
+  const authDataString = localStorage.getItem('authData');
+  if(!authDataString || authDataString===undefined|| authDataString===null){
+  return null;  
+  }
+ const authData: AuthData =  JSON.parse(authDataString);
+  return authData;
 }
 
 // Define a function to store the access token and refresh token
-function setAuthTokens(accessToken: string, refreshToken: string): void {
-  localStorage.setItem('accessToken', accessToken);
-  localStorage.setItem('refreshToken', refreshToken);
+export const setLocalAuthData=(authData:AuthData): void =>{
+  localStorage.setItem('authData', JSON.stringify(authData));
 }
 
 // Define an interceptor to add the access token to every request
 
 apiClient.interceptors.request.use(
-  (config) => {
-    const accessToken = getAccessToken();
-    if (accessToken) {
-        config.headers.Authorization = `Bearer ${accessToken}`;
+  (config:InternalAxiosRequestConfig) => {
+    const auth = getLocalAuthData();
+    if (auth?.access_token) {
+        config.headers.access_token = auth?.access_token;
     }
     return config;},
   (error: AxiosError) => {
@@ -57,13 +55,21 @@ apiClient.interceptors.response.use(
   },
   async (error: AxiosError) => {
     const originalRequest:AxiosRequestConfig|undefined = error.config;
-    const refreshToken = getRefreshToken();
-    if (error.response && error.response.status === 401 && refreshToken && originalRequest&& !originalRequest._retry) {
+    const auth = getLocalAuthData();
+    if (error.response && error.response.status === 401 && auth?.refresh_token && originalRequest&& !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const response = await axios.post('/refresh-token', { refreshToken });
-        const newAccessToken = response.data.accessToken;
-        setAuthTokens(newAccessToken, refreshToken);
+        const options = {
+          headers: {
+            refresh_token: auth.refresh_token,
+          },
+        };
+        const response = await axios.get('/auths/refreshToken', options);
+        const newAccessToken = response.data.access_token;
+        const newRefreshToken = response.data.refresh_token;
+        auth.access_token = newAccessToken;
+        auth.refresh_token = newRefreshToken;
+        setLocalAuthData(auth);
         return apiClient(originalRequest);
       } catch (refreshError) {
         console.error(refreshError);

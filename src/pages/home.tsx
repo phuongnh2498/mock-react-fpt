@@ -1,8 +1,8 @@
-import React from "react";
+import React, { FC } from "react";
 
 type HomeProps = {};
 
-const Home = (props: HomeProps) => {
+const Home: FC<HomeProps> = (props: HomeProps) => {
   return <div>home</div>;
 };
 

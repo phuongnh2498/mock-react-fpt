@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { Link, Outlet } from "react-router-dom";
-import Navbar from "./navbar";
+import Navbar from "./Navbar";
 type LayoutProps = {};
 const Layout: FC<LayoutProps> = ({}) => {
   return (

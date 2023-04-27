@@ -1,23 +1,34 @@
 // define some example arrow funtion to call api using axios exported from axios.ts
 
+import { AxiosError, AxiosResponse } from "axios";
 import { apiClient } from "../shared/axios";
 
-const getExample = async () => {
-    const response = await apiClient.get('/example');
-    return response.data;
-    }
-// define a post arrow function with type
-const postExample = async (data: any) => {
-    const response = await apiClient.post('/example', data);
-    return response.data;
-    }
-// define a get arrow function with type with paging
-const getExampleWithPaging = async (page: number, size: number) => {
-    const response = await apiClient.get(`/example?page=${page}&size=${size}`);
-    return response.data;
-    }   
-// define a get arrow function with type with paging and search
-const getExampleWithPagingAndSearch = async (page: number, size: number, search: string) => {
-    const response = await apiClient.get(`/example?page=${page}&size=${size}&search=${search}`);
-    return response.data;
-    }
+const handleError = (error:AxiosError) => {
+  const message=
+    (error.response && error.response.data+"" ) ||
+    error.message ||
+    "Something went wrong!";
+  throw new Error(message);
+};
+
+// Login API Call
+export const axios_login = async (email:string, password:string): Promise<AxiosResponse<LoginResponse>>  => {
+  const response = await apiClient.post<LoginRequest,AxiosResponse<LoginResponse>>("/auths/login", { email, password }).catch(handleError);
+  return response;
+};
+// Add Register API Call
+export const axios_addUser = async (user:RegisterRequest): Promise<AxiosResponse<RegisterResponse>>  => {
+  const response = await apiClient.post("/users", user).catch(handleError);
+  return response;
+};
+export const axios_getUsersByID= async (userId:string): Promise<AxiosResponse<UserResponse>>  => {
+  const response = await apiClient.get(`/users/filter/${userId}`).catch(handleError);
+  return response;
+};
+
+// Get Users API Call
+export const axios_getUsers = async (): Promise<AxiosResponse<User[]>>  => {
+  const response = await apiClient.get("/users").catch(handleError);
+  return response;
+};
+
